@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	vid.read(capt);
-	acc = Mat::zeros(capt.size(), CV_32FC3);
+	acc = Mat::zeros(capt.size(), CV_32FC1);
 	for (;;) {
 		vid >> capt;
 		if (capt.empty()) {
@@ -34,8 +34,8 @@ int main(int argc, char** argv)
 		}
 		//Week 2: Image Reprocessing
 		
-		//cvtColor(capt, capt, COLOR_BGR2GRAY);
-		//equalizeHist(capt, capt);
+		cvtColor(capt, capt, COLOR_BGR2GRAY);
+		equalizeHist(capt, capt);
 
 		//Week 3.1 : Motion Tracking
 		GaussianBlur(capt, capt, Size(KERNEL_SIZE, KERNEL_SIZE), 0, 0);
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 		convertScaleAbs(acc, background);
 		subtract(capt, background, motion);
 		threshold(motion, capt, 20, 255, THRESH_BINARY);
-		cvtColor(capt, capt, COLOR_BGR2GRAY);
+		//cvtColor(capt, capt, COLOR_BGR2GRAY);
 		//threshold(capt, capt, 10, 255, THRESH_BINARY);
 		
 		//Week 3.2 : Contour
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 		
 		imshow("motion detected", motion);
 		imshow("motion threshold", capt);
-		//imshow("Contours", drawing);
+		imshow("Contours", drawing);
 		if (waitKey(30) >= 0) break;
 	}
 	
