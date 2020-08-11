@@ -11,22 +11,26 @@ using namespace std;
 
 int MAX_KERNEL_LENGTH = 15;
 int KERNEL_SIZE = 13;
-float alpha = 0.05;
+float alpha = 0.5;
 RNG rng(12345);
 
 int main(int argc, char** argv)
 {
 	
-	Mat capt, acc, background, motion;
+	Mat capt, acc, background, motion, temp;
 	VideoCapture vid("..\\video.avi");
 	if (!vid.isOpened()) {
 		cout << "couldn't open video." << endl;
 		return -1;
 	}
 	vid.read(capt);
+	//cvtColor(capt, capt, COLOR_BGR2GRAY);
+	//equalizeHist(capt, capt);
 	acc = Mat::zeros(capt.size(), CV_32FC1);
+	//acc = capt;
+	
 	for (;;) {
-		vid >> capt;
+		vid >> temp;
 		if (capt.empty()) {
 			//vid.release();
 			cout << "Finished!" << endl;
@@ -34,15 +38,19 @@ int main(int argc, char** argv)
 		}
 		//Week 2: Image Reprocessing
 		
-		cvtColor(capt, capt, COLOR_BGR2GRAY);
+		cvtColor(temp, capt, COLOR_BGR2GRAY);
 		equalizeHist(capt, capt);
 
 		//Week 3.1 : Motion Tracking
 		GaussianBlur(capt, capt, Size(KERNEL_SIZE, KERNEL_SIZE), 0, 0);
 		accumulateWeighted(capt, acc, alpha);
 		convertScaleAbs(acc, background);
+		//imshow("background detected", background);
 		subtract(capt, background, motion);
-		threshold(motion, capt, 20, 255, THRESH_BINARY);
+		imshow("motion detected", motion);
+		threshold(motion, capt, 10, 255, THRESH_BINARY);
+		imshow("motion threshold", capt);
+		erode(capt, capt, Mat(), Point(-1, -1));
 		//cvtColor(capt, capt, COLOR_BGR2GRAY);
 		//threshold(capt, capt, 10, 255, THRESH_BINARY);
 		
@@ -66,7 +74,7 @@ int main(int argc, char** argv)
 
 
 		/// Draw polygonal contour + bonding rects + circles
-		Mat drawing = Mat::zeros(capt.size(), CV_8UC3);
+		Mat drawing = temp;
 		for (int i = 0; i < contours.size(); i++)
 		{
 			Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
@@ -80,10 +88,10 @@ int main(int argc, char** argv)
 		//acc = (1-alpha) * frame + alpha * acc; <--- accumulateWeighted()
 		
 		
-		imshow("motion detected", motion);
-		imshow("motion threshold", capt);
+		
+		
 		imshow("Contours", drawing);
-		if (waitKey(30) >= 0) break;
+		if (waitKey(5) >= 0) break;
 	}
 	
 	return 0;
