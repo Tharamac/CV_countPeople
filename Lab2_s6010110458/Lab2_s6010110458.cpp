@@ -11,13 +11,13 @@ using namespace std;
 
 int MAX_KERNEL_LENGTH = 15;
 int KERNEL_SIZE = 13;
-float alpha = 0.05;
+float alpha = 0.4;
 RNG rng(12345);
 
 int main(int argc, char** argv)
 {
 	
-	Mat capt, acc, background, motion;
+	Mat capt, acc, background, motion,frame;
 	VideoCapture vid("..\\video.avi");
 	if (!vid.isOpened()) {
 		cout << "couldn't open video." << endl;
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	vid.read(capt);
 	acc = Mat::zeros(capt.size(), CV_32FC3);
 	for (;;) {
-		vid >> capt;
+		vid >> frame;
 		if (capt.empty()) {
 			//vid.release();
 			cout << "Finished!" << endl;
@@ -38,13 +38,16 @@ int main(int argc, char** argv)
 		//equalizeHist(capt, capt);
 
 		//Week 3.1 : Motion Tracking
-		GaussianBlur(capt, capt, Size(KERNEL_SIZE, KERNEL_SIZE), 0, 0);
+		GaussianBlur(frame, capt, Size(KERNEL_SIZE, KERNEL_SIZE), 0, 0);
 		accumulateWeighted(capt, acc, alpha);
 		convertScaleAbs(acc, background);
 		subtract(capt, background, motion);
 		threshold(motion, capt, 20, 255, THRESH_BINARY);
 		cvtColor(capt, capt, COLOR_BGR2GRAY);
-		//threshold(capt, capt, 10, 255, THRESH_BINARY);
+		threshold(capt, capt, 10, 255, THRESH_BINARY);
+	
+		//morphologyEx(capt,capt,MORPH_OPEN,Size)
+		
 		
 		//Week 3.2 : Contour
 		vector<vector<Point>> contours;
@@ -66,7 +69,7 @@ int main(int argc, char** argv)
 
 
 		/// Draw polygonal contour + bonding rects + circles
-		Mat drawing = Mat::zeros(capt.size(), CV_8UC3);
+		Mat drawing = frame;
 		for (int i = 0; i < contours.size(); i++)
 		{
 			Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
@@ -82,7 +85,7 @@ int main(int argc, char** argv)
 		
 		imshow("motion detected", motion);
 		imshow("motion threshold", capt);
-		//imshow("Contours", drawing);
+		imshow("Contours", drawing);
 		if (waitKey(30) >= 0) break;
 	}
 	
