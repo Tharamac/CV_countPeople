@@ -154,10 +154,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Tracker.cpp" />
+    <ClCompile Include="TrackingObject.cpp" />
     <ClCompile Include="Lab2_s6010110458.cpp" />
+    <ClCompile Include="TrackingObjectSet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\video.avi" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Tracker.h" />
+    <ClInclude Include="TrackingObject.h" />
+    <ClInclude Include="TrackingObjectSet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
