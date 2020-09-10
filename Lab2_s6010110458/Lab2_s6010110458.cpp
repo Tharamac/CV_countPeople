@@ -26,13 +26,14 @@ int main(int argc, char** argv)
 	vid.read(capt);
 	//cvtColor(capt, capt, COLOR_BGR2GRAY);
 	//equalizeHist(capt, capt);
+	//equalizeHist(capt, capt);s
 	acc = Mat::zeros(capt.size(), CV_32FC1);
 	//acc = capt;
 	
 	for (;;) {
 		vid >> temp;
-		if (capt.empty()) {
-			//vid.release();
+		if (temp.empty()) {
+			vid.release();
 			cout << "Finished!" << endl;
 			break;
 		}
@@ -48,9 +49,9 @@ int main(int argc, char** argv)
 		//imshow("background detected", background);
 		subtract(capt, background, motion);
 		imshow("motion detected", motion);
-		threshold(motion, capt, 10, 255, THRESH_BINARY);
+		threshold(motion, capt, 7, 255, THRESH_BINARY);
 		imshow("motion threshold", capt);
-		erode(capt, capt, Mat(), Point(-1, -1));
+		//erode(capt, capt, Mat(), Point(-1, -1));
 		//cvtColor(capt, capt, COLOR_BGR2GRAY);
 		//threshold(capt, capt, 10, 255, THRESH_BINARY);
 		
@@ -60,22 +61,26 @@ int main(int argc, char** argv)
 		findContours(capt, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
 		/// Approximate contours to polygons + get bounding rects and circles
-		vector<vector<Point> > contours_poly(contours.size());
+		vector<vector<Point>> contours_poly(contours.size());
 		vector<Rect> boundRect(contours.size());
 		vector<Point2f>center(contours.size());
 		vector<float>radius(contours.size());
+		vector<Rect> classifiedRect;
 
 		for (int i = 0; i < contours.size(); i++)
 		{
 			approxPolyDP(Mat(contours[i]), contours_poly[i], 3, true);
 			boundRect[i] = boundingRect(Mat(contours_poly[i]));
+			if (boundRect[i].height > 60 && boundRect[i].width > 90) {
+				classifiedRect.push_back(boundRect[i]);
+			}
 			minEnclosingCircle(contours_poly[i], center[i], radius[i]);
 		}
 
 
 		/// Draw polygonal contour + bonding rects + circles
-		Mat drawing = temp;
-		for (int i = 0; i < contours.size(); i++)
+		Mat drawing = capt;
+		for (int i = 0; i < classifiedRect.size(); i++)
 		{
 			Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 			drawContours(drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
