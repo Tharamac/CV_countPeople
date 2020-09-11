@@ -1,6 +1,6 @@
 #include "Tracker.h"
-Scalar Tracker::Track(Rect new_rect) {
-	int objidx = whichObjectBelong(new_rect);
+Scalar Tracker::Track(Rect new_rect, int rows) {
+	int objidx = whichObjectBelong(new_rect,rows);
 	Scalar color;
 	if (objidx == -1) // not exist
 	{
@@ -46,13 +46,32 @@ Scalar Tracker::AddExistingObject(int objIdx, Rect new_obj_position){
 	return objsSet->objs[objsSet->objs.size() - 1].color;
 }
 
-int Tracker::whichObjectBelong(Rect new_object_position){
+int Tracker::whichObjectBelong(Rect new_object_position, int rows){
 	// check minimum distance
 	int objIdx = -1;
 	double minDist = 10000, dist;
+	//if ((new_object_position.y < objsSet->BORDER_RADIUS) || (rows -  (new_object_position.y + new_object_position.height) < objsSet->BORDER_RADIUS)) {
+	//	return -1;
+	//}
 	for (size_t i = 0; i < objsSet->objs.size(); i++){
 		dist = CalcDistance(new_object_position, objsSet->objs[i].getCurrentPosition());
 		if (dist < minDist){
+			minDist = dist;
+			objIdx = i;
+		}
+	}
+	if (minDist > objsSet->TRACKER_RADIUS)
+		objIdx = -1;
+	return objIdx;
+}
+
+int Tracker::whichObjectBelong(Rect new_object_position) {
+	// check minimum distance
+	int objIdx = -1;
+	double minDist = 10000, dist;
+	for (size_t i = 0; i < objsSet->objs.size(); i++) {
+		dist = CalcDistance(new_object_position, objsSet->objs[i].getCurrentPosition());
+		if (dist < minDist) {
 			minDist = dist;
 			objIdx = i;
 		}

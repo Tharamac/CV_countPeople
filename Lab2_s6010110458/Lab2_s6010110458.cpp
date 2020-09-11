@@ -18,6 +18,7 @@ int KERNEL_SIZE = 13;
 float alpha = 0.4;
 RNG rng(12345);
 Mat morpho_kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
+Mat morpho_kernel1 = getStructuringElement(MORPH_ELLIPSE, Size(7, 7));
 Tracker tracker = Tracker();
 
 int main(int argc, char** argv)
@@ -52,10 +53,10 @@ int main(int argc, char** argv)
 		subtract(capt, background, motion);
 		threshold(motion, capt, 20, 255, THRESH_BINARY);
 		cvtColor(capt, capt, COLOR_BGR2GRAY);
-		threshold(capt, capt, 10, 255, THRESH_BINARY);
-	
+		threshold(capt, capt, 5, 255, THRESH_BINARY);
+		//ode(capt, capt, morpho_kernel1, Point(4, 4), 1);
 		morphologyEx(capt, capt, MORPH_OPEN, morpho_kernel);
-		dilate(capt, capt, morpho_kernel, Point(1,1), 2);
+		dilate(capt, capt, morpho_kernel, Point(3,3), 2);
 		
 		
 		//Week 3.2 : Contour
@@ -75,7 +76,7 @@ int main(int argc, char** argv)
 			
 			approxPolyDP(Mat(contours[i]), contours_poly[i], 3, true);
 			boundRect[i] = boundingRect(Mat(contours_poly[i]));
-			if ((boundRect[i].height > 60 && boundRect[i].width > 80) && (boundRect[i].height < 150 && boundRect[i].width < 180))
+			if ((boundRect[i].height > 60 && boundRect[i].width > 80) && (boundRect[i].height < 200 && boundRect[i].width < 200))
 				classifiedRect.push_back(boundRect[i]);
 			minEnclosingCircle(contours_poly[i], center[i], radius[i]);
 		}
@@ -87,7 +88,7 @@ int main(int argc, char** argv)
 		
 		for (int i = 0; i < classifiedRect.size(); i++)
 		{
-			Scalar color = tracker.Track(classifiedRect[i]);
+			Scalar color = tracker.Track(classifiedRect[i],drawing.rows);
 	
 			//drawContours(drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
 			rectangle(drawing, classifiedRect[i].tl(), classifiedRect[i].br(),color , 2, 8, 0);
@@ -103,9 +104,6 @@ int main(int argc, char** argv)
 					totalDown++;
 				}
 			}
-
-				
-			
 		}
 		cout << tracker.objsSet->objs.size() << endl;
 		putText(drawing, "Total up: ", Point(20, 425), FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(10, 255, 255), 2, 2);
@@ -116,9 +114,9 @@ int main(int argc, char** argv)
 		//acc = (1-alpha) * frame + alpha * acc; <--- accumulateWeighted()
 		
 		
-		//imshow("motion detected", motion);
-		//imshow("motion threshold", capt);
-		imshow("Contours", drawing);
+		imshow("motion detected", motion);
+		imshow("motion threshold", capt);
+		imshow("Output", drawing);
 		if (waitKey(10) >= 0) break;
 	}
 	
